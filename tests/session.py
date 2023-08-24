@@ -3,7 +3,7 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from database import Base
+from database.config import Base
 
 engine = create_engine('sqlite://', echo=True)
 

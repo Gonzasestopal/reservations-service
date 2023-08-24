@@ -87,11 +87,15 @@ To get a local copy up and running follow these simple steps.
    alembic upgrade head 
    ```
 
+5. Run seeds
+   ```sh
+   python seeds.py
+   ```
+
 6. Run app
     ```sh
     uvicorn main:app --reload --env-file .env
     ```
-
 
 ### Testing
 

@@ -11,3 +11,6 @@ ignore =
     WPS441
     DAR101
     DAR201 
+per-file-ignores =
+    tests/**:F401
+    seeds.py: D103

@@ -1,10 +1,9 @@
 """SQLAlchemy Data Models."""
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String
 
-Base = declarative_base()
+from database.config import Base
 
 
 class Diner(Base):

@@ -1,5 +1,6 @@
 """Config sqlalchemy resources."""
 from sqlalchemy import URL, create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from database.settings import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
@@ -22,3 +23,5 @@ db_session = scoped_session(
         autoflush=False,
     ),
 )
+
+Base = declarative_base()
