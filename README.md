@@ -65,7 +65,7 @@ To get a local copy up and running follow these simple steps.
 
 1. Clone the repo
    ```sh
-   git clone git@github.com:Gonzasestopal/restaurant-api.git
+   git clone git@github.com:Gonzasestopal/reservations-service.git
    ```
 2. Install NPM packages
    ```sh
@@ -77,7 +77,17 @@ To get a local copy up and running follow these simple steps.
    pip install -r requirements.txt
    ```
 
-4. Run app
+4. Add settings
+   ```sh
+   cp env.example .env
+   ```
+
+5. Run migrations
+   ```sh
+   python db.py
+   ```
+
+6. Run app
     ```sh
-    uvicorn main:app --reload
+    uvicorn main:app --reload --env-file .env
     ```

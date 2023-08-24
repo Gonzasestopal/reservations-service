@@ -1,22 +1,24 @@
+"""App route resolver."""
+
 import os
 
 from fastapi import FastAPI
 from mangum import Mangum
 
 stage = os.environ.get('STAGE', None)
-openapi_prefix = f"/{stage}" if stage else "/"
+openapi_prefix = f'/{stage}' if stage else '/'
 
 # Here is the magic
 app = FastAPI(openapi_prefix=openapi_prefix)
 
 
-@app.get("/")
+@app.get('/')
 async def root():
-    return {"message": "Hello World"}
+    return {'message': 'Hello World'}
 
 
-@app.get("/users")
+@app.get('/users')
 async def get_users():
-    return {"message": "Get Users!"}
+    return {'message': 'Get Users!'}
 
-handler = Mangum(app)
+handler = Mangum(app)  # noqa: WPS110
