@@ -1,11 +1,10 @@
 """Config sqlalchemy resources."""
 from sqlalchemy import URL, create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from database.settings import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 
-url = URL.create(
+DATABASE_URL = URL.create(
     'postgresql',
     username=DB_USER,
     password=DB_PASSWORD,
@@ -14,7 +13,7 @@ url = URL.create(
     port=DB_PORT,
 )
 
-engine = create_engine(url, echo=True)
+engine = create_engine(DATABASE_URL, echo=True)
 
 db_session = scoped_session(
     sessionmaker(
@@ -23,5 +22,3 @@ db_session = scoped_session(
         autoflush=False,
     ),
 )
-
-Base = declarative_base()

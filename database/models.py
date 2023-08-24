@@ -1,8 +1,10 @@
 """SQLAlchemy Data Models."""
 from sqlalchemy import Column, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String
 
-from database.config import Base
+Base = declarative_base()
 
 
 class Diner(Base):
@@ -34,11 +36,13 @@ class DinersRestrictions(Base):
         Integer,
         ForeignKey('diners.id', name='fk_diners_restrictions_diner_id'),
     )
+    diner = relationship(Diner)
     restriction_id = Column(
         'restriction_id',
         Integer,
         ForeignKey('restrictions.id', name='fk_diners_restrictions_restriction_id'),
     )
+    restriction = relationship(Restriction)
 
 
 class Restaurant(Base):
@@ -68,13 +72,15 @@ class RestaurantsEndorsements(Base):
     restaurant_id = Column(
         'restaurant_id',
         Integer,
-        ForeignKey('diners.id', name='fk_restaurants_endorsements_restaurant_id'),
+        ForeignKey('restaurants.id', name='fk_restaurants_endorsements_restaurant_id'),
     )
+    restaurant = relationship(Restaurant)
     endorsement_id = Column(
         'endorsement_id',
         Integer,
-        ForeignKey('restrictions.id', name='fk_restaurants_endorsements_endorsement_id'),
+        ForeignKey('endorsements.id', name='fk_restaurants_endorsements_endorsement_id'),
     )
+    endorsement = relationship(Endorsement)
 
 
 class Table(Base):
@@ -97,8 +103,13 @@ class Reservation(Base):
         Integer,
         ForeignKey('tables.id', name='fk_reservations_table_id'),
     )
+    table = relationship(Table)
     diner_id = Column(
         'diner_id',
         Integer,
         ForeignKey('diners.id', name='fk_reservations_diner_id'),
     )
+    diner = relationship(Diner)
+
+
+metadata = Base.metadata

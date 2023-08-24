@@ -84,10 +84,25 @@ To get a local copy up and running follow these simple steps.
 
 5. Run migrations
    ```sh
-   python db.py
+   alembic upgrade head 
    ```
 
 6. Run app
     ```sh
     uvicorn main:app --reload --env-file .env
+    ```
+
+
+### Testing
+
+To verify tests are working follow these simple steps.
+
+1. Install python dev packages
+   ```sh
+   pip install -r requirements-dev.txt
+   ```
+
+2. Run tests
+    ```sh
+    mamba tests
     ```
