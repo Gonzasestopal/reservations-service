@@ -1,0 +1,41 @@
+
+service: reservations-service
+
+provider:
+ name: aws
+ runtime: python3.11
+ region: us-east-1
+ memorySize: 128
+ stage: ${opt:stage, "dev"}
+
+package:
+  individually: true
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  app:
+    handler: main.handler
+    environment:
+      STAGE: ${self:provider.stage}
+    events:
+     - http: ANY /
+     - http: 'ANY {proxy+}'
+    layers:
+      - { Ref: PythonRequirementsLambdaLayer }
+    package:
+      include:
+        - "main.py"
+      exclude:
+        - "requirements.txt"
+        - "package.json"
+        - "package-lock.json"
+        - ".serverless/**"
+        - ".venv/**"
+        - "node_modules/**"
+        - "tests/**"
