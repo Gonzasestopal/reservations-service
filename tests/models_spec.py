@@ -1,6 +1,8 @@
 """Models tests."""
 
-from expects import equal, expect
+from datetime import datetime
+
+from expects import contain, equal, expect
 from mamba import after, before, describe, it
 
 from database.models import (Diner, DinersRestrictions, Endorsement,
@@ -133,18 +135,79 @@ with describe(RestaurantsEndorsements) as self:
 
 
 with describe(Table):
-    with before.all:
+    with before.each:
         self.session = attach_session()
 
-    with after.all:
+    with after.each:
         detach_session(self.session)
 
     with it('shuould have capacity'):
-        table = Table(capacity=2)
+        restaurant = Restaurant(
+            name='Rosettta',
+        )
+        self.session.add(restaurant)
+        self.session.flush()
+        table = Table(
+            restaurant_id=restaurant.id,
+            capacity=2,
+            available_at=datetime.now(),
+        )
         self.session.add(table)
         self.session.commit()
 
         expect(table.capacity).to(equal(2))
+
+    with it('should have a restaurant associated'):
+        restaurant = Restaurant(
+            name='Anonimo',
+        )
+        self.session.add(restaurant)
+        self.session.flush()
+        table = Table(
+            restaurant_id=restaurant.id,
+            capacity=2,
+            available_at=datetime.now(),
+        )
+        self.session.add(table)
+        self.session.commit()
+
+        expect(table.restaurant.name).to(equal('Anonimo'))
+
+    with it('should have a available dates'):
+        now = datetime.now()
+        restaurant = Restaurant(
+            name='Parnita',
+        )
+        self.session.add(restaurant)
+        self.session.flush()
+        table = Table(
+            restaurant_id=restaurant.id,
+            capacity=2,
+            available_at=now,
+        )
+        self.session.add(table)
+        self.session.commit()
+
+        expect(table.available_at).to(equal(now))
+
+    with it('should get available restaurant tables'):
+        now = datetime.now()
+        restaurant = Restaurant(
+            name='Parnita',
+        )
+        self.session.add(restaurant)
+        self.session.flush()
+        table = Table(
+            restaurant_id=restaurant.id,
+            capacity=2,
+            available_at=now,
+        )
+        self.session.add(table)
+        self.session.commit()
+
+        tables = Table.get_available_restaurant_tables_by_capacity(self.session, now, 2)
+
+        expect(tables).to(contain(table))
 
 
 with describe(Reservation):
@@ -155,7 +218,16 @@ with describe(Reservation):
         detach_session(self.session)
 
     with it('shuould have table and diner asociation'):
-        table = Table(capacity=2)
+        now = datetime.now()
+        restaurant = Restaurant(
+            name='Parnita',
+        )
+        table = Table(
+            capacity=2,
+            restaurant=restaurant,
+            available_at=now,
+        )
+
         self.session.add(table)
         self.session.flush()
         diner = Diner(

@@ -5,7 +5,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from database.config import Base
 
-engine = create_engine('sqlite://', echo=True)
+engine = create_engine('sqlite://', echo=False)
 
 
 def attach_session():

@@ -1,5 +1,8 @@
 """Populate DB."""
 
+import random
+from datetime import datetime, timedelta
+
 from dotenv import dotenv_values
 from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -24,9 +27,25 @@ RESTAURANTS = (
     'Rosetta', 'Bellinis', 'Pujol', 'Anonimo',
 )
 
-TABLE_CAPACITY = (
-    2, 4, 6, 8,
+CAPACITIES = (
+    2, 4, 5, 6, 8,
 )
+
+TIMES = (
+    '12:00', '13:00', '13:45', '14:00', '15:00', '15:15', '16:00', '18:00', '19:30', '21:00',
+)
+
+DELTA = (
+    1, 2, 3, 4, 5, 6,
+)
+
+def create_dates():
+    new_date = datetime.now()
+    delta = random.choice(DELTA)
+    time = random.choice(TIMES)
+    hour, minutes = time.split(':')
+    new_date_with_new_hour = new_date.replace(hour=int(hour), minute=int(minutes))
+    return new_date_with_new_hour + timedelta(days=delta)
 
 
 def create_diners(session):
@@ -58,9 +77,13 @@ def create_restaurant(session):
 
 
 def create_tables(session):
-    for table in TABLE_CAPACITY:
-        table = Table(capacity=table)
-        session.add(table)
+    for restaurant_name in (RESTAURANTS * 2):
+        for index in range(random.randrange(len(CAPACITIES))):
+            available_at = create_dates()
+            capacity = CAPACITIES[index]
+            restaurant = session.query(Restaurant).filter(Restaurant.name == restaurant_name).first()
+            table = Table(capacity=capacity, restaurant_id=restaurant.id, available_at=available_at)
+            session.add(table)
     session.commit()
 
 

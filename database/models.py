@@ -1,7 +1,7 @@
 """SQLAlchemy Data Models."""
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer, String
+from sqlalchemy import Column, ForeignKey, extract
+from sqlalchemy.orm import Session, joinedload, relationship
+from sqlalchemy.types import DateTime, Integer, String
 
 from database.config import Base
 
@@ -89,6 +89,28 @@ class Table(Base):
 
     id = Column(Integer, primary_key=True, autoincrement='auto')
     capacity = Column(Integer, nullable=False)
+    restaurant_id = Column(
+        'restaurant_id',
+        Integer,
+        ForeignKey('restaurants.id', name='fk_table_restaurant_id'),
+    )
+    restaurant = relationship(Restaurant)
+    available_at = Column(DateTime, nullable=False)
+
+    @classmethod
+    def get_available_restaurant_tables_by_capacity(cls, session, available_at, capacity):
+        return session.query(Table).options(
+            joinedload(Table.restaurant),
+        ).join(
+            Restaurant, Table.restaurant_id == Restaurant.id,
+        ).filter(
+            Table.capacity >= capacity,
+            extract('day', Table.available_at) == available_at.day,
+            extract('month', Table.available_at) == available_at.month,
+            extract('year', Table.available_at) == available_at.year,
+            extract('hour', Table.available_at) == available_at.hour,
+            extract('minute', Table.available_at) == available_at.minute,
+        ).all()
 
 
 class Reservation(Base):
