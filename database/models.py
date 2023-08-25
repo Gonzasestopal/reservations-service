@@ -1,6 +1,6 @@
 """SQLAlchemy Data Models."""
 from sqlalchemy import Column, ForeignKey, extract
-from sqlalchemy.orm import Session, joinedload, relationship
+from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.types import DateTime, Integer, String
 
 from database.config import Base
@@ -14,6 +14,12 @@ class Diner(Base):
     id = Column(Integer, primary_key=True, autoincrement='auto')
     name = Column(String(100), unique=True, nullable=False)
 
+    @classmethod
+    def get_all_by_name(cls, session, diners_name):
+        return session.query(cls).filter(
+            Diner.name.in_(diners_name),
+        ).all()
+
 
 class Restriction(Base):
     """Restriction model."""
@@ -22,6 +28,12 @@ class Restriction(Base):
 
     id = Column(Integer, primary_key=True, autoincrement='auto')
     name = Column(String(50), unique=True, nullable=False)
+    endorsement_id = Column(
+        'endorsement_id',
+        Integer,
+        ForeignKey('endorsements.id', name='fk_restrictions_endorsement_id'),
+    )
+    endorsement = relationship('Endorsement')
 
 
 class DinersRestrictions(Base):
@@ -42,6 +54,14 @@ class DinersRestrictions(Base):
         ForeignKey('restrictions.id', name='fk_diners_restrictions_restriction_id'),
     )
     restriction = relationship(Restriction)
+
+    @classmethod
+    def get_all_by_diners(cls, session, diners):
+        return session.query(cls).join(
+            Diner, cls.diner_id == Diner.id,
+        ).filter(
+            Diner.id.in_([diner.id for diner in diners]),
+        ).all()
 
 
 class Restaurant(Base):
@@ -98,18 +118,25 @@ class Table(Base):
     available_at = Column(DateTime, nullable=False)
 
     @classmethod
-    def get_available_restaurant_tables_by_capacity(cls, session, available_at, capacity):
+    def get_available_restaurant_tables_by_capacity(cls, session, available_at, diners_restrictions):
+        diners_endorsements_ids = [diners_restriction.restriction.endorsement.id for diners_restriction in diners_restrictions]
+        diners_ids = {diner_restriction.diner.id for diner_restriction in diners_restrictions}
         return session.query(Table).options(
             joinedload(Table.restaurant),
         ).join(
             Restaurant, Table.restaurant_id == Restaurant.id,
+        ).join(
+            RestaurantsEndorsements, RestaurantsEndorsements.restaurant_id == Restaurant.id,
+        ).join(
+            Endorsement, Endorsement.id == RestaurantsEndorsements.endorsement_id,
         ).filter(
-            Table.capacity >= capacity,
+            Table.capacity >= len(diners_ids),
             extract('day', Table.available_at) == available_at.day,
             extract('month', Table.available_at) == available_at.month,
             extract('year', Table.available_at) == available_at.year,
             extract('hour', Table.available_at) == available_at.hour,
             extract('minute', Table.available_at) == available_at.minute,
+            Endorsement.id.in_(diners_endorsements_ids),
         ).all()
 
 

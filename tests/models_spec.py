@@ -2,19 +2,23 @@
 
 from datetime import datetime
 
-from expects import contain, equal, expect
+from expects import be_empty, contain, equal, expect
 from mamba import after, before, describe, it
 
 from database.models import (Diner, DinersRestrictions, Endorsement,
                              Reservation, Restaurant, RestaurantsEndorsements,
                              Restriction, Table)
+from tests.fixtures import (add_extra_restriction_to_diner,
+                            create_healthy_diner, create_kosher_diner,
+                            create_vegan_diner,
+                            create_vegan_healthy_restaurant)
 from tests.session import attach_session, detach_session
 
 with describe(Diner) as self:
-    with before.all:
+    with before.each:
         self.session = attach_session()
 
-    with after.all:
+    with after.each:
         detach_session(self.session)
 
     with it('should have name'):
@@ -25,6 +29,21 @@ with describe(Diner) as self:
         self.session.commit()
 
         expect(diner.name).to(equal('Jill'))
+
+    with it('should get all diners by name'):
+        diner = Diner(
+            name='Jill',
+        )
+        diner_two = Diner(
+            name='Jack',
+        )
+        self.session.add(diner)
+        self.session.add(diner_two)
+        self.session.commit()
+
+        diners = Diner.get_all_by_name(self.session, ['Jack', 'Jill'])
+
+        expect(diners).to(equal([diner_two, diner]))
 
 with describe(Restriction) as self:
     with before.all:
@@ -42,12 +61,28 @@ with describe(Restriction) as self:
 
         expect(restriction.name).to(equal('Vegan'))
 
+    with it('should have an endorsement asociated'):
+        endorsement = Endorsement(
+            name='Healthy',
+        )
+        self.session.add(endorsement)
+        self.session.flush()
+        restriction = Restriction(
+            name='Fit',
+            endorsement=endorsement,
+        )
+        self.session.add(restriction)
+
+        self.session.commit()
+
+        expect(restriction.endorsement.name).to(equal('Healthy'))
+
 
 with describe(DinersRestrictions) as self:
-    with before.all:
+    with before.each:
         self.session = attach_session()
 
-    with after.all:
+    with after.each:
         detach_session(self.session)
 
     with it('should have diner and restriction asociation'):
@@ -70,6 +105,29 @@ with describe(DinersRestrictions) as self:
 
         expect(diners_restrictions.diner.name).to(equal('Jill'))
         expect(diners_restrictions.restriction.name).to(equal('Vegan'))
+
+    with it('should get diners restrictions by diners'):
+        diner = Diner(
+            name='Jack',
+        )
+        self.session.add(diner)
+        self.session.flush()
+        restriction = Restriction(
+            name='Fit',
+        )
+        self.session.add(restriction)
+        self.session.flush()
+        diners_restrictions = DinersRestrictions(
+            diner_id=diner.id,
+            restriction_id=restriction.id,
+        )
+        self.session.add(diners_restrictions)
+        self.session.commit()
+
+        diners_restrictions = DinersRestrictions.get_all_by_diners(session=self.session, diners=[diner])
+
+        for diner_restriction in diners_restrictions:
+            expect(diner_restriction.restriction).to(equal(restriction))
 
 
 with describe(Restaurant) as self:
@@ -192,22 +250,46 @@ with describe(Table):
 
     with it('should get available restaurant tables'):
         now = datetime.now()
-        restaurant = Restaurant(
-            name='Parnita',
-        )
-        self.session.add(restaurant)
-        self.session.flush()
-        table = Table(
-            restaurant_id=restaurant.id,
-            capacity=2,
-            available_at=now,
-        )
-        self.session.add(table)
-        self.session.commit()
+        diner, vegan_endorsement, vegan_restriction = create_vegan_diner(self.session, 'Jill')
+        diner_two, healthy_endorsement, fit_restriction = create_healthy_diner(self.session, 'Jack')
+        lactose_restriction = add_extra_restriction_to_diner(self.session, diner, healthy_endorsement)
+        table = create_vegan_healthy_restaurant(self.session, 2)
 
-        tables = Table.get_available_restaurant_tables_by_capacity(self.session, now, 2)
+        tables = Table.get_available_restaurant_tables_by_capacity(self.session, now, [vegan_restriction, fit_restriction, lactose_restriction])
 
         expect(tables).to(contain(table))
+
+    with it('should not find any table when diners are more than capacity'):
+        now = datetime.now()
+        diner, vegan_endorsement, vegan_restriction = create_vegan_diner(self.session, 'Jill')
+        diner_two, healthy_endorsement, fit_restriction = create_healthy_diner(self.session, 'Jack')
+        lactose_restriction = add_extra_restriction_to_diner(self.session, diner, healthy_endorsement)
+        table = create_vegan_healthy_restaurant(self.session, 1)
+
+        tables = Table.get_available_restaurant_tables_by_capacity(self.session, now, [vegan_restriction, fit_restriction, lactose_restriction])
+
+        expect(tables).to(be_empty)
+
+    with it('should not find any table when restaurant has no empty schedules'):
+        available_at = datetime.fromisoformat('2023-08-24T12:00:00')
+        diner, vegan_endorsement, vegan_restriction = create_vegan_diner(self.session, 'Jill')
+        diner_two, healthy_endorsement, fit_restriction = create_healthy_diner(self.session, 'Jack')
+        lactose_restriction = add_extra_restriction_to_diner(self.session, diner, healthy_endorsement)
+        table = create_vegan_healthy_restaurant(self.session, 4)
+
+        tables = Table.get_available_restaurant_tables_by_capacity(self.session, available_at, [vegan_restriction, fit_restriction, lactose_restriction])
+
+        expect(tables).to(be_empty)
+
+    with it('should not find any table when restrictions mismatch restaurant endorsements'):
+        available_at = datetime.fromisoformat('2023-08-24T12:00:00')
+        diner, kosher_endorsement, kosher_restriction = create_kosher_diner(self.session, 'Gonz')
+        table = create_vegan_healthy_restaurant(self.session, 4)
+
+        tables = Table.get_available_restaurant_tables_by_capacity(self.session, available_at, [kosher_restriction])
+
+        expect(tables).to(be_empty)
+
 
 
 with describe(Reservation):
