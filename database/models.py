@@ -20,6 +20,12 @@ class Diner(Base):
             Diner.name.in_(diners_name),
         ).all()
 
+    @classmethod
+    def get_all_by_id(cls, session, diners_id):
+        return session.query(cls).filter(
+            Diner.id.in_(diners_id),
+        ).all()
+
 
 class Restriction(Base):
     """Restriction model."""
@@ -121,21 +127,21 @@ class Table(Base):
     def get_available_restaurant_tables_by_capacity(cls, session, available_at, diners_restrictions):
         diners_endorsements_ids = [diners_restriction.restriction.endorsement.id for diners_restriction in diners_restrictions]
         diners_ids = {diner_restriction.diner.id for diner_restriction in diners_restrictions}
-        return session.query(Table).options(
-            joinedload(Table.restaurant),
+        return session.query(cls).options(
+            joinedload(cls.restaurant),
         ).join(
-            Restaurant, Table.restaurant_id == Restaurant.id,
+            Restaurant, cls.restaurant_id == Restaurant.id,
         ).join(
             RestaurantsEndorsements, RestaurantsEndorsements.restaurant_id == Restaurant.id,
         ).join(
             Endorsement, Endorsement.id == RestaurantsEndorsements.endorsement_id,
         ).filter(
-            Table.capacity >= len(diners_ids),
-            extract('day', Table.available_at) == available_at.day,
-            extract('month', Table.available_at) == available_at.month,
-            extract('year', Table.available_at) == available_at.year,
-            extract('hour', Table.available_at) == available_at.hour,
-            extract('minute', Table.available_at) == available_at.minute,
+            cls.capacity >= len(diners_ids),
+            extract('day', cls.available_at) == available_at.day,
+            extract('month', cls.available_at) == available_at.month,
+            extract('year', cls.available_at) == available_at.year,
+            extract('hour', cls.available_at) == available_at.hour,
+            extract('minute', cls.available_at) == available_at.minute,
             Endorsement.id.in_(diners_endorsements_ids),
         ).all()
 
@@ -158,6 +164,16 @@ class Reservation(Base):
         ForeignKey('diners.id', name='fk_reservations_diner_id'),
     )
     diner = relationship(Diner)
+    booked_at = Column(DateTime, nullable=False)
 
 
-metadata = Base.metadata
+    @classmethod
+    def create_reservation(cls, session, diner, table, booked_at):
+        reservation = cls(
+            diner=diner,
+            table=table,
+            booked_at=booked_at,
+        )
+        session.add(reservation)
+        session.commit()
+        return reservation

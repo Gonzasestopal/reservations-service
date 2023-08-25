@@ -291,7 +291,6 @@ with describe(Table):
         expect(tables).to(be_empty)
 
 
-
 with describe(Reservation):
     with before.all:
         self.session = attach_session()
@@ -302,7 +301,7 @@ with describe(Reservation):
     with it('shuould have table and diner asociation'):
         now = datetime.now()
         restaurant = Restaurant(
-            name='Parnita',
+            name='Anonimo',
         )
         table = Table(
             capacity=2,
@@ -320,9 +319,26 @@ with describe(Reservation):
         reservation = Reservation(
             diner_id=diner.id,
             table_id=table.id,
+            booked_at=now,
         )
         self.session.add(reservation)
         self.session.commit()
 
         expect(reservation.diner.name).to(equal('Jill'))
         expect(reservation.table.capacity).to(equal(2))
+
+    with it('should create reservation from diners_id and table_id using timestamp'):
+        now = datetime.now()
+        healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')
+        table = create_vegan_healthy_restaurant(self.session, 4)
+
+        reservation = Reservation.create_reservation(
+            self.session,
+            table=table,
+            diner=healthy_diner,
+            booked_at=now,
+        )
+
+        expect(reservation.diner.name).to(equal('Gonz'))
+        expect(reservation.booked_at).to(equal(now))
+        expect(reservation.table).to(equal(table))

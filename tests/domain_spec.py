@@ -1,4 +1,4 @@
-"""Models tests."""
+"""Domain tests."""
 
 from datetime import datetime
 
