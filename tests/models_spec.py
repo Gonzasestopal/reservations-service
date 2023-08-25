@@ -5,13 +5,23 @@ from datetime import datetime
 from expects import be_empty, contain, equal, expect
 from mamba import after, before, describe, it
 
-from database.models import (Diner, DinersRestrictions, Endorsement,
-                             Reservation, Restaurant, RestaurantsEndorsements,
-                             Restriction, Table)
-from tests.fixtures import (add_extra_restriction_to_diner,
-                            create_healthy_diner, create_kosher_diner,
-                            create_vegan_diner,
-                            create_vegan_healthy_restaurant)
+from database.models import (
+    Diner,
+    DinersRestrictions,
+    Endorsement,
+    Reservation,
+    Restaurant,
+    RestaurantsEndorsements,
+    Restriction,
+    Table,
+)
+from tests.fixtures import (
+    add_extra_restriction_to_diner,
+    create_healthy_diner,
+    create_kosher_diner,
+    create_vegan_diner,
+    create_vegan_healthy_restaurant,
+)
 from tests.session import attach_session, detach_session
 
 with describe(Diner) as self:
@@ -255,7 +265,9 @@ with describe(Table):
         lactose_restriction = add_extra_restriction_to_diner(self.session, diner, healthy_endorsement)
         table = create_vegan_healthy_restaurant(self.session, 2)
 
-        tables = Table.get_available_restaurant_tables_by_capacity(self.session, now, [vegan_restriction, fit_restriction, lactose_restriction])
+        tables = Table.get_available_restaurant_tables_by_capacity(
+            self.session, now, [vegan_restriction, fit_restriction, lactose_restriction],
+        )
 
         expect(tables).to(contain(table))
 
@@ -266,7 +278,9 @@ with describe(Table):
         lactose_restriction = add_extra_restriction_to_diner(self.session, diner, healthy_endorsement)
         table = create_vegan_healthy_restaurant(self.session, 1)
 
-        tables = Table.get_available_restaurant_tables_by_capacity(self.session, now, [vegan_restriction, fit_restriction, lactose_restriction])
+        tables = Table.get_available_restaurant_tables_by_capacity(
+            self.session, now, [vegan_restriction, fit_restriction, lactose_restriction],
+        )
 
         expect(tables).to(be_empty)
 
@@ -277,7 +291,9 @@ with describe(Table):
         lactose_restriction = add_extra_restriction_to_diner(self.session, diner, healthy_endorsement)
         table = create_vegan_healthy_restaurant(self.session, 4)
 
-        tables = Table.get_available_restaurant_tables_by_capacity(self.session, available_at, [vegan_restriction, fit_restriction, lactose_restriction])
+        tables = Table.get_available_restaurant_tables_by_capacity(
+            self.session, available_at, [vegan_restriction, fit_restriction, lactose_restriction],
+        )
 
         expect(tables).to(be_empty)
 
@@ -329,7 +345,7 @@ with describe(Reservation):
 
     with it('should create reservation from diners_id and table_id using timestamp'):
         now = datetime.now()
-        healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')
+        healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')  # noqa: WPS472
         table = create_vegan_healthy_restaurant(self.session, 4)
 
         reservation = Reservation.create_reservation(

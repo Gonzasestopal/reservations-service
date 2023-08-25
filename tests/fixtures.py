@@ -1,8 +1,14 @@
 from datetime import datetime
 
-from database.models import (Diner, DinersRestrictions, Endorsement,
-                             Restaurant, RestaurantsEndorsements, Restriction,
-                             Table)
+from database.models import (
+    Diner,
+    DinersRestrictions,
+    Endorsement,
+    Restaurant,
+    RestaurantsEndorsements,
+    Restriction,
+    Table,
+)
 
 
 def create_vegan_diner(session, diner_name):

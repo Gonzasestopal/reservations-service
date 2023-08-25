@@ -1,9 +1,12 @@
 from datetime import datetime
 
 from database.config import db_session
-from database.repositories import (DinerRepository,
-                                   DinersRestrictionsRepository,
-                                   ReservationRepository, TableRepository)
+from database.repositories import (
+    DinerRepository,
+    DinersRestrictionsRepository,
+    ReservationRepository,
+    TableRepository,
+)
 
 
 def get_restaurants(

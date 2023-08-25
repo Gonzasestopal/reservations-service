@@ -45,7 +45,6 @@ with describe(repositories.ReservationRepository) as self:
         self.table = Mock()
         self.diner = Mock()
 
-
     with it('should create reservation'):
         restaurant_entity = Mock()
         diner_entity = Mock()
@@ -183,5 +182,3 @@ with describe(repositories.TableRepository) as self:
         )
 
         expect(tables).to(contain(entity_one))
-
-

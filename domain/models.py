@@ -18,6 +18,7 @@ class Table(BaseModel):
     capacity: int
     available_at: datetime
     restaurant: Restaurant
+    reservation_url: str = None
 
 
 class Reservation(BaseModel):

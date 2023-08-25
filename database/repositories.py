@@ -5,13 +5,13 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from app.helpers import build_reservation_url
+from database.interface import BaseRepository
+from database.models import Diner, DinersRestrictions, Reservation, Table
 from domain.models import Diner as DomainDiner
 from domain.models import Reservation as DomainReservation
 from domain.models import Restaurant as DomainRestaurant
 from domain.models import Table as DomainTable
-
-from .interface import BaseRepository
-from .models import Diner, DinersRestrictions, Reservation, Table
 
 
 class TableRepository(BaseRepository):
@@ -39,6 +39,9 @@ class TableRepository(BaseRepository):
             diners_restrictions=diners_restrictions,
             session=self._session,
         )
+
+        diners_ids = {diner_restriction.diner.id for diner_restriction in diners_restrictions}
+
         return [
             self._entity(
                 id=table.id,
@@ -48,6 +51,7 @@ class TableRepository(BaseRepository):
                     name=table.restaurant.name,
                 ),
                 available_at=table.available_at,
+                reservation_url=build_reservation_url(table.id, diners_ids),
             )
             for table in tables
         ]
@@ -69,6 +73,7 @@ class DinersRestrictionsRepository(BaseRepository):
             diners=diners,
             session=self._session,
         )
+
 
 class DinerRepository(BaseRepository):
     """Diner repository."""
@@ -108,7 +113,7 @@ class ReservationRepository(BaseRepository):
     def get_all(self):
         return self._session.query(self._base_model).all()
 
-    def create_reservation(
+    def create_reservation(  # noqa: WPS211
         self,
         diner,
         table,

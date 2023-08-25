@@ -16,6 +16,7 @@ app = FastAPI(openapi_prefix=openapi_prefix)
 app.include_router(restaurants_router)
 app.include_router(reservations_router)
 
+
 @app.get('/')
 async def root():
     return {'message': 'Hello World'}
