@@ -308,10 +308,10 @@ with describe(Table):
 
 
 with describe(Reservation):
-    with before.all:
+    with before.each:
         self.session = attach_session()
 
-    with after.all:
+    with after.each:
         detach_session(self.session)
 
     with it('shuould have table and diner asociation'):
@@ -358,3 +358,23 @@ with describe(Reservation):
         expect(reservation.diner.name).to(equal('Gonz'))
         expect(reservation.booked_at).to(equal(now))
         expect(reservation.table).to(equal(table))
+
+    with it('should check for existing reservations'):
+        healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')  # noqa: WPS472
+        vegan_diner, *_ = create_vegan_diner(self.session, 'Jill')  # noqa: WPS472
+        table = create_vegan_healthy_restaurant(self.session, 2)
+        diners = [healthy_diner, vegan_diner]
+
+        reservation = Reservation.create_reservation(
+            self.session,
+            table=table,
+            diner=healthy_diner,
+            booked_at=table.available_at,
+        )
+
+        booked_reservations = Reservation.verify_reservations(
+            self.session,
+            diners=diners,
+        )
+
+        expect(booked_reservations[0]).to(equal(reservation))

@@ -3,7 +3,7 @@
 from unittest.mock import Mock, call
 
 from expects import contain, equal, expect
-from mamba import after, before, describe, it
+from mamba import before, describe, it
 
 from database import repositories
 
@@ -104,6 +104,27 @@ with describe(repositories.ReservationRepository) as self:
         )
 
         expect(reservation).to(equal(entity_one))
+
+    with it('should create reservation'):
+        diners = [Mock(), Mock()]
+        restaurant_entity = Mock()
+        diner_entity = Mock()
+        table_entity = Mock()
+        reservation_repository = repositories.ReservationRepository(self.session, self.base_model, self.entity)
+        self.base_model.verify_reservations.return_value = diners
+        reservation_repository.verify_reservation(
+            diners=diners,
+            diner_entity=diner_entity,
+            restaurant_entity=restaurant_entity,
+            table_entity=table_entity,
+        )
+
+        expect(self.base_model.verify_reservations.call_args).to(equal(
+            call(
+                session=self.session,
+                diners=diners,
+            ),
+        ))
 
 
 with describe(repositories.DinersRestrictionsRepository) as self:

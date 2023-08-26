@@ -175,6 +175,14 @@ class Reservation(Base):
     booked_at = Column(DateTime, nullable=False)
 
     @classmethod
+    def verify_reservations(cls, session, diners):
+        diner_ids = [diner.id for diner in diners]
+
+        return session.query(cls).filter(
+            cls.diner_id.in_(diner_ids),
+        ).all()
+
+    @classmethod
     def create_reservation(cls, session, diner, table, booked_at):
         reservation = cls(
             diner=diner,

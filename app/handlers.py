@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import timedelta
 
+from app.errors import ExistingBookingError
 from database.config import db_session
 from database.repositories import (
     DinerRepository,
@@ -50,11 +51,18 @@ def generate_reservation(
         table = table_repository.get_by_id(table_id)
 
         reservation_repository = reservation_repository_cls(session=session)
+
+        booked_reservations = reservation_repository.verify_reservation(diners)
+
+        for reservation in booked_reservations:
+            if reservation.booked_at <= table.available_at + timedelta(hours=2):
+                raise ExistingBookingError
+
         for diner in diners:
             new_reservation = reservation_repository.create_reservation(
                 table=table,
                 diner=diner,
-                booked_at=datetime.now(),
+                booked_at=table.available_at,
             )
             reservations.append(new_reservation)
 

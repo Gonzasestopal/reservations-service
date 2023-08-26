@@ -146,3 +146,35 @@ class ReservationRepository(BaseRepository):
                 ),
             ),
         )
+
+    def verify_reservation(
+        self,
+        diners,
+        restaurant_entity=DomainRestaurant,
+        diner_entity=DomainDiner,
+        table_entity=DomainTable,
+    ):
+        reservations = self._base_model.verify_reservations(
+            session=self._session,
+            diners=diners,
+        )
+
+        return [
+            self._entity(
+                id=reservation.id,
+                booked_at=reservation.booked_at,
+                diner=diner_entity(
+                    id=reservation.diner.id,
+                    name=reservation.diner.name,
+                ),
+                table=table_entity(
+                    id=reservation.table.id,
+                    available_at=reservation.table.available_at,
+                    capacity=reservation.table.capacity,
+                    restaurant=restaurant_entity(
+                        id=reservation.table.restaurant.id,
+                        name=reservation.table.restaurant.name,
+                    ),
+                ),
+            ) for reservation in reservations
+        ]
