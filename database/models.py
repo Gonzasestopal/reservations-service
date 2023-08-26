@@ -1,6 +1,6 @@
 """SQLAlchemy Data Models."""
 
-from sqlalchemy import Column, ForeignKey, extract, func
+from sqlalchemy import Boolean, Column, ForeignKey, extract, func
 from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.types import DateTime, Integer, String
 
@@ -123,6 +123,7 @@ class Table(Base):
     )
     restaurant = relationship(Restaurant)
     available_at = Column(DateTime, nullable=False)
+    is_booked = Column(Boolean, default=False)
 
     @classmethod
     def get_available_restaurant_tables_by_capacity(cls, session, available_at, diners_restrictions):
@@ -139,6 +140,7 @@ class Table(Base):
             extract('hour', cls.available_at) == available_at.hour,
             extract('minute', cls.available_at) == available_at.minute,
             Endorsement.id.in_(diners_endorsements_ids),
+            cls.is_booked.is_(False),
         )
 
         return session.query(cls).options(  # noqa: WPS221
@@ -190,6 +192,11 @@ class Reservation(Base):
             booked_at=booked_at,
         )
         session.add(reservation)
+        table = session.query(Table).filter(
+            Table.id == table.id,
+        ).update({
+            Table.is_booked: True,
+        })
         session.commit()
         return reservation
 

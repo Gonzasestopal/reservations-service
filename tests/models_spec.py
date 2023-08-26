@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from expects import be_empty, be_none, contain, equal, expect
+from expects import be_empty, be_none, be_true, contain, equal, expect
 from mamba import after, before, describe, it
 
 from database.models import (
@@ -358,6 +358,21 @@ with describe(Reservation):
         expect(reservation.diner.name).to(equal('Gonz'))
         expect(reservation.booked_at).to(equal(now))
         expect(reservation.table).to(equal(table))
+
+    with it('should set table to booked'):
+        now = datetime.now()
+        healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')  # noqa: WPS472
+        table = create_vegan_healthy_restaurant(self.session, 4)
+
+        reservation = Reservation.create_reservation(
+            self.session,
+            table=table,
+            diner=healthy_diner,
+            booked_at=now,
+        )
+
+        expect(table.is_booked).to(be_true)
+
 
     with it('should check for existing reservations'):
         healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')  # noqa: WPS472
