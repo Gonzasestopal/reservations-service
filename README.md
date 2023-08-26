@@ -104,7 +104,7 @@ To get a local copy up and running follow these simple steps.
 
 8. Run app
     ```sh
-    uvicorn main:app --reload --env-file .env
+    uvicorn app.main:app --reload --env-file .env
     ```
 
 
