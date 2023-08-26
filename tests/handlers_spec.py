@@ -60,7 +60,6 @@ with describe(generate_reservation) as self:
             reservation_repository_cls=self.reservation_repository_cls,
         )).to(raise_error(ExistingBookingError))
 
-
     with it('should generate reservation if existing reservation found but its 2 hour from now'):
         self.table_repository.get_by_id.return_value = Mock(available_at=datetime.now())
         self.reservation_repository.verify_reservation.return_value = [Mock(booked_at=datetime.now() + timedelta(hours=3))]

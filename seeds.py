@@ -129,11 +129,11 @@ if __name__ == '__main__':
     config = dotenv_values()
     url = URL.create(
         'postgresql',
-        username=config['DB_USER'],
-        password=config['DB_PASSWORD'],
-        host=config['DB_HOST'],
-        database=config['DB_NAME'],
-        port=config['DB_PORT'],
+        username=config['POSTGRES_USER'],
+        password=config['POSTGRES_PASSWORD'],
+        host=config['POSTGRES_HOST'],
+        database=config['POSTGRES_NAME'],
+        port=config['POSTGRES_PORT'],
     )
     engine = create_engine(url)
     db_session = scoped_session(

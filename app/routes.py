@@ -15,9 +15,12 @@ restaurants_router = APIRouter(
     tags=['restaurants'],
 )
 
+diners_params = Query(None, alias='diners')
 
 @restaurants_router.get('', response_model=DomainTable)
-async def get_restaurants(available_at: datetime, diners: List[str] = Query(None, alias='diners')):  # noqa: B008, WPS404, E501
+async def get_restaurants(available_at: datetime, diners: List[str] = diners_params):  # noqa: B008, WPS404, E501
+    if not diners:
+        raise HTTPException(status_code=422, detail='diners required')
     restaurants = get_restaurant_handler(available_at, diners)
     return JSONResponse(jsonable_encoder(restaurants))
 
@@ -29,7 +32,9 @@ reservations_router = APIRouter(
 
 
 @reservations_router.get('')
-async def generate_reservation(table_id: int, diners_id: List[str] = Query(None, alias='diners')):   # noqa: B008, WPS404, E501
+async def generate_reservation(table_id: int, diners_id: List[str] = diners_params):   # noqa: B008, WPS404, E501
+    if not diners_id:
+        raise HTTPException(status_code=422, detail='diners required')
     try:
         reservations = create_reservation_handler(table_id=table_id, diners_id=diners_id)
     except ExistingBookingError:

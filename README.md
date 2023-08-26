@@ -61,6 +61,11 @@ To get a local copy up and running follow these simple steps.
   nvm install node
   ```
 
+* psql
+  ```sh
+  docker-compose up
+  ```
+
 ### Installation
 
 1. Clone the repo
@@ -77,25 +82,35 @@ To get a local copy up and running follow these simple steps.
    pip install -r requirements.txt
    ```
 
-4. Add settings
+4. Install python dev packages
+   ```sh
+   pip install -r requirements-dev.txt
+   ```
+
+5. Add settings
    ```sh
    cp env.example .env
    ```
 
-5. Run migrations
+6. Run migrations
    ```sh
-   alembic upgrade head 
+   alembic upgrade head
    ```
 
-5. Run seeds
+7. Run seeds
    ```sh
    python seeds.py
    ```
 
-6. Run app
+8. Run app
     ```sh
     uvicorn main:app --reload --env-file .env
     ```
+
+
+### Docs
+
+FastAPI auto generated docs will be available at http://localhost:8000/docs
 
 ### Testing
 
