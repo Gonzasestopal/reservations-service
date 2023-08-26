@@ -8,21 +8,21 @@ from fastapi.responses import JSONResponse
 from app.errors import ExistingBookingError
 from app.handlers import delete_reservation as delete_reservation_handler
 from app.handlers import generate_reservation as create_reservation_handler
-from app.handlers import get_restaurants as get_restaurant_handler
+from app.handlers import get_tables as get_tables_handler
 from domain.models import Table as DomainTable
 
-restaurants_router = APIRouter(
-    prefix='/restaurants',
-    tags=['restaurants'],
+tables_router = APIRouter(
+    prefix='/tables',
+    tags=['tables'],
 )
 
 diners_params = Query(None, alias='diners')
 
-@restaurants_router.get('', response_model=DomainTable)
-async def get_restaurants(available_at: datetime, diners: List[str] = diners_params):  # noqa: B008, WPS404, E501
+@tables_router.get('', response_model=DomainTable)
+async def get(available_at: datetime, diners: List[str] = diners_params):  # noqa: B008, WPS404, E501
     if not diners:
         raise HTTPException(status_code=422, detail='diners required')
-    restaurants = get_restaurant_handler(available_at, diners)
+    restaurants = get_tables_handler(available_at, diners)
     return JSONResponse(jsonable_encoder(restaurants))
 
 

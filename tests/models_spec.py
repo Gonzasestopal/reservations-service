@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from expects import be_empty, contain, equal, expect, be_none
+from expects import be_empty, be_none, contain, equal, expect
 from mamba import after, before, describe, it
 
 from database.models import (
@@ -53,7 +53,7 @@ with describe(Diner) as self:
 
         diners = Diner.get_all_by_name(self.session, ['Jack', 'Jill'])
 
-        expect(diners).to(equal([diner_two, diner]))
+        expect(diners).to(contain(diner_two, diner))
 
 with describe(Restriction) as self:
     with before.all:

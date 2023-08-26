@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI
 from mangum import Mangum
 
-from app.routes import reservations_router, restaurants_router
+from app.routes import reservations_router, tables_router
 
 stage = os.environ.get('STAGE', None)
 openapi_prefix = f'/{stage}' if stage else '/'
@@ -13,7 +13,7 @@ openapi_prefix = f'/{stage}' if stage else '/'
 # Here is the magic
 app = FastAPI(openapi_prefix=openapi_prefix)
 
-app.include_router(restaurants_router)
+app.include_router(tables_router)
 app.include_router(reservations_router)
 
 

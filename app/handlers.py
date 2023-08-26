@@ -10,7 +10,7 @@ from database.repositories import (
 )
 
 
-def get_restaurants(
+def get_tables(
     available_at,
     diners_name,
     table_repository_cls=TableRepository,

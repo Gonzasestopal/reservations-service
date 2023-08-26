@@ -1,6 +1,6 @@
 """SQLAlchemy Data Models."""
 
-from sqlalchemy import Column, ForeignKey, extract
+from sqlalchemy import Column, ForeignKey, extract, func
 from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.types import DateTime, Integer, String
 
@@ -18,7 +18,7 @@ class Diner(Base):
     @classmethod
     def get_all_by_name(cls, session, diners_name):
         return session.query(cls).filter(
-            Diner.name.in_(diners_name),
+            func.lower(Diner.name).in_([diner.lower() for diner in diners_name]),
         ).all()
 
     @classmethod
