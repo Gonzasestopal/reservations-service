@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from expects import be_empty, contain, equal, expect
+from expects import be_empty, contain, equal, expect, be_none
 from mamba import after, before, describe, it
 
 from database.models import (
@@ -378,3 +378,22 @@ with describe(Reservation):
         )
 
         expect(booked_reservations[0]).to(equal(reservation))
+
+    with it('should delete reservations'):
+        healthy_diner, *_ = create_healthy_diner(self.session, 'Gonz')  # noqa: WPS472
+        vegan_diner, *_ = create_vegan_diner(self.session, 'Jill')  # noqa: WPS472
+        table = create_vegan_healthy_restaurant(self.session, 2)
+        diners = [healthy_diner, vegan_diner]
+
+        reservation = Reservation.create_reservation(
+            self.session,
+            table=table,
+            diner=healthy_diner,
+            booked_at=table.available_at,
+        )
+
+        Reservation.delete_reservation(self.session, reservation.id)
+
+        reervation = self.session.query(Reservation).get(reservation.id)
+
+        expect(reervation).to(be_none)

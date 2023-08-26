@@ -192,3 +192,10 @@ class Reservation(Base):
         session.add(reservation)
         session.commit()
         return reservation
+
+    @classmethod
+    def delete_reservation(cls, session, reservation_id):
+        session.query(cls).filter(
+            cls.id == reservation_id,
+        ).delete()
+        session.commit()

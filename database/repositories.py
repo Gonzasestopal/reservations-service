@@ -178,3 +178,6 @@ class ReservationRepository(BaseRepository):
                 ),
             ) for reservation in reservations
         ]
+
+    def delete_reservation(self, diner_id):
+        self._base_model.delete_reservation(self._session, diner_id)

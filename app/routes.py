@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from app.errors import ExistingBookingError
 
+from app.errors import ExistingBookingError
+from app.handlers import delete_reservation as delete_reservation_handler
 from app.handlers import generate_reservation as create_reservation_handler
 from app.handlers import get_restaurants as get_restaurant_handler
 from domain.models import Table as DomainTable
@@ -42,6 +43,6 @@ async def generate_reservation(table_id: int, diners_id: List[str] = diners_para
     return JSONResponse(jsonable_encoder(reservations))
 
 
-@reservations_router.delete('/')
-async def remove_reservations():
-    return {'message': 'Hello World'}
+@reservations_router.delete('/{reservation_id}')
+async def remove_reservations(reservation_id):
+    delete_reservation_handler(reservation_id=reservation_id)

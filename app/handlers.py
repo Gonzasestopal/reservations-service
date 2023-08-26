@@ -67,3 +67,9 @@ def generate_reservation(
             reservations.append(new_reservation)
 
     return reservations
+
+
+def delete_reservation(reservation_id, reservation_repository_cls=ReservationRepository):
+    with db_session() as session:
+        reservation_repository = reservation_repository_cls(session)
+        reservation_repository.delete_reservation(reservation_id)
